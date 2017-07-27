@@ -1,84 +1,110 @@
 import { h, app } from "../src"
 
-window.requestAnimationFrame = cb => cb()
+window.requestAnimationFrame = setTimeout
 
-beforeEach(() => (document.body.innerHTML = ""))
-
-test("init", () => {
-  app({
-    view: state => "",
-    state: 1,
-    actions: {
-      step: state => state + 1
-    },
-    events: {
-      init: [
-        (state, actions) => actions.step(),
-        (state, actions) => actions.step(),
-        state => expect(state).toBe(3)
-      ]
-    }
-  })
+beforeEach(() => {
+  document.body.innerHTML = ""
 })
 
-test("loaded", done => {
+test("load", done => {
   app({
-    state: "foo",
-    view: state => h("div", null, state),
+    view: state => "",
+    state: {
+      value: "foo"
+    },
+    actions: {
+      set(state, actions, value) {
+        return { value }
+      }
+    },
     events: {
-      init() {
-        expect(document.body.innerHTML).toBe("")
+      load(state, actions) {
+        actions.set("bar")
       },
-      loaded() {
-        expect(document.body.innerHTML).toBe(`<div>foo</div>`)
+      update(state, actions, nextState) {
+        expect(state.value).toBe("foo")
+        expect(nextState.value).toBe("bar")
         done()
       }
     }
   })
 })
 
-test("beforeAction", done => {
+test("render", done => {
   app({
-    state: "",
-    view: state => h("div", null, state),
+    state: {
+      value: "foo"
+    },
+    view: state => h("div", {}, state.value),
+    events: {
+      render(state, actions, view) {
+        return state => h("main", {}, view(state, actions))
+      },
+      patch() {
+        expect(document.body.innerHTML).toBe(`<main><div>foo</div></main>`)
+        done()
+      }
+    }
+  })
+})
+
+test("action", done => {
+  app({
+    view: state => h("div", {}, state.value),
+    state: {
+      value: "foo"
+    },
     actions: {
-      set: (state, actions, data) => data
+      set(state, actions, value) {
+        return { value }
+      }
     },
     events: {
-      init(state, actions) {
-        actions.set("foo")
+      load(state, actions) {
+        actions.set("bar")
       },
-      loaded() {
+      patch(state) {
+        expect(state).toEqual({ value: "bar" })
         expect(document.body.innerHTML).toBe(`<div>bar</div>`)
         done()
       },
-      beforeAction(state, actions, { name, data }) {
-        if (name === "set") {
-          return  "bar"
-        }
+      action(state, actions, { name, data }) {
+        expect(name).toBe("set")
+        expect(data).toBe("bar")
       }
     }
   })
 })
 
-test("afterAction", done => {
+test("resolve", done => {
   app({
-    state: "",
-    view: state => h("div", null, state),
+    view: state => h("div", {}, state.value),
+    state: {
+      value: "foo"
+    },
     actions: {
-      set: (state, actions, data) => "bar"
+      set(state, actions, data) {
+        return `?value=bar`
+      }
     },
     events: {
-      init: (state, actions) => {
-        actions.set("foo")
+      load(state, actions) {
+        actions.set("bar")
       },
-      loaded: () => {
-        expect(document.body.innerHTML).toBe(`<div>baz</div>`)
+      patch(state) {
+        expect(state).toEqual({ value: "bar" })
+        expect(document.body.innerHTML).toBe(`<div>bar</div>`)
         done()
       },
-      afterAction: (state, actions, { name, data }) => {
-        if (name === "set") {
-          return { data: "baz" }
+      resolve(state, actions, result) {
+        if (typeof result === "string") {
+          //
+          // Support for query strings as a valid action result type.
+          //
+          const [key, value] = result.slice(1).split("=")
+          return {
+            [key]: value
+          }
         }
       }
     }
@@ -87,73 +113,46 @@ test("afterAction", done => {
 
 test("update", done => {
   app({
-    state: 1,
-    view: state => h("div", null, state),
-    actions: {
-      add: state => state + 1
+    view: state => h("div", {}, state.value),
+    state: {
+      value: "foo"
     },
-    events: {
-      init(state, actions) {
-        actions.add()
-      },
-      loaded() {
-        expect(document.body.innerHTML).toBe(`<div>20</div>`)
-        done()
-      },
-      update(state, actions, data) {
-        return data * 10
-      }
-    }
-  })
-})
-
-test("render", done => {
-  app({
-    state: 1,
-    view: state => h("div", null, state),
-    events: {
-      loaded() {
-        expect(document.body.innerHTML).toBe(`<main><div>1</div></main>`)
-        done()
-      },
-      render(state, actions, view) {
-        return state => h("main", null, view(state, actions))
-      }
-    }
-  })
-})
-
-test("custom event", () => {
-  const emit = app({
-    view: state => "",
-    events: {
-      foo(state, actions, data) {
-        expect("foo").toBe(data)
-      }
-    }
-  })
-
-  emit("foo", "foo")
-})
-
-test("nested action name", () => {
-  app({
-    view: state => "",
-    state: "",
     actions: {
-      foo: {
-        bar: {
-          set: (state, actions, data) => data
-        }
+      set(state, actions, value) {
+        return { value }
       }
     },
     events: {
-      init(state, actions) {
-        actions.foo.bar.set("foobar")
+      load(state, actions) {
+        actions.set(null)
       },
-      beforeAction(state, actions, { name, data }) {
-        expect(name).toBe("foo.bar.set")
-        expect(data).toBe("foobar")
+      patch(state) {
+        expect(state).toEqual({ value: "foo" })
+        expect(document.body.innerHTML).toBe(`<div>foo</div>`)
+        done()
+      },
+      update(state, actions, nextState) {
+        //
+        // We can use update to validate state changes.
+        //
+        if (typeof nextState.value !== "string") return state
+      }
+    }
+  })
+})
+
+test("patch", done => {
+  app({
+    view: state => h("div", {}, "foo"),
+    events: {
+      patch(state, actions, root) {
+        //
+        // This event fires after the view is rendered and attached
+        // to the DOM with your app top-level element / root.
+        //
+        root.appendChild(document.createTextNode("bar"))
+        expect(document.body.innerHTML).toBe(`<div>foobar</div>`)
+        done()
       }
     }
   })

@@ -2,7 +2,7 @@
 
 The [state](/docs/api.md#state) represents the entire data model in your application.
 
-[Try it online](https://codepen.io/hyperapp/pen/zNxRLy?editors=0110)
+[Try it Online](https://codepen.io/hyperapp/pen/zNxRLy?editors=0110)
 
 ```jsx
 app({
@@ -25,13 +25,4 @@ app({
 })
 ```
 
-The notion of representing the application state as an atomic single source of truth is known as single state tree. The tree is populated using a concept called [actions](/docs/actions.md).
-
-The state is usually an object, but it can also be a string, a number or a boolean.
-
-```jsx
-app({
-  state: "Hello.",
-  view: state => <h1>{state}</h1>
-})
-```
+The notion of representing the application state as a single source of truth is known as single state tree. The tree is populated using a concept called [actions](/docs/actions.md).

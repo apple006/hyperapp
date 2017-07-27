@@ -2,7 +2,7 @@
 
 In this example we'll create a TweetBox clone and learn how to organize our UI code using [Components](/docs/components.md).
 
-[Try it online](https://codepen.io/hyperapp/pen/bgWBdV?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/bgWBdV?editors=0010)
 
 ```jsx
 const MAX_LENGTH = 120

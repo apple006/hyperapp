@@ -38,7 +38,7 @@ Below is an alphabetical list of some of the terms and concepts used throughout 
 [keys](/docs/keys.md)<br>
 
 ##### L
-[events.loaded](/docs/api.md#loaded)<br>
+[events.load](/docs/api.md#load)<br>
 
 ##### M
 [mixins](/docs/mixins.md)<br>
@@ -48,12 +48,15 @@ Below is an alphabetical list of some of the terms and concepts used throughout 
 
 ##### O
 [oncreate](/docs/lifecycle-events.md#oncreate)<br>
-[oninsert](/docs/lifecycle-events.md#onisert)<br>
 [onupdate](/docs/lifecycle-events.md#onupdate)<br>
 [onremove](/docs/lifecycle-events.md#onremove)<br>
 
+##### P
+[events.patch](/docs/api.md#patch)<br>
+
 ##### R
 [root](/docs/api.md#root)<br>
+[events.resolve](/docs/api.md#resolve)<br>
 [events.render](/docs/api.md#render)<br>
 
 ##### S

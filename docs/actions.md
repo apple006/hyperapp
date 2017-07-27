@@ -1,8 +1,8 @@
 # Actions
 
-Actions are functions which take the current [state](/docs/state.md) and return a partial state or a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that resolves to a partial state. Actions represent the intent to manipulate the state tree.
+Actions are functions which take the current [state](/docs/state.md) and return a partial state or a [thunk](#thunks). Actions represent the intent to manipulate the state tree.
 
-[Try it online](https://codepen.io/hyperapp/pen/qRMEGX?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/qRMEGX?editors=0010)
 
 ```jsx
 app({
@@ -29,22 +29,42 @@ app({
 })
 ```
 
-Actions are often called as a result of user events triggered on the [view](/docs/view.md), or inside application [events](/docs/events.md).
+Actions are often called as a result of user events triggered on the [view](/docs/view.md) or inside application [events](/docs/events.md).
 
-## Async Updates
+## Thunks
 
-Actions can return a [Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) that resolves to a partial state. This minimizes the amount of code we need to write to update the state asynchronously.
-
-[Try it online](https://codepen.io/hyperapp/pen/ZeByKv?editors=0010)
+Actions can return a function instead of a partial state. This function is called a _thunk_. They operate like regular actions but will not trigger a state update unless you call [`update`](/docs/api.md#update) from within the thunk function.
 
 ```jsx
 app({
-  // ...
+  actions: {
+    defer(state, actions, data) {
+      return update => {
+        // ...
+        update(newData)
+      }
+    }
+  }
+})
+```
+
+The action returns the result of the thunk, allowing you to modify how actions operate and what types they can return.
+
+Use thunks to defer state updates, create [getters](#getters), scoped mixins, etc.
+
+## Async Updates
+
+Use [thunks](#thunks) to update the state asynchronously, e.g., after a [promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) resolves.
+
+[Try it Online](https://codepen.io/hyperapp/pen/ZeByKv?editors=0010)
+
+```jsx
+app({
   actions: {
     getURL(state) {
-      return fetch(`/search?q=${state.query}`)
+      return update => fetch(`/search?q=${state.query}`)
         .then(data => data.json())
-        .then(json => ({
+        .then(json => update({
           url: json[0].url
         })
       )
@@ -53,11 +73,11 @@ app({
 })
 ```
 
-Actions need not have a return value at all. You can use an action to create side effects, call other actions inside a callback, etc.
+
+Actions need not have a return value at all. You can use them to create side effects, call other actions, etc.
 
 ```jsx
 app({
-  // ...
   actions: {
     setURL(state, actions, data) {
       return { url: data[0].url }
@@ -80,25 +100,19 @@ app({
 })
 ```
 
-## Thunks
+## Getters
 
-Actions can return a function (thunk) instead of a partial state. If an action returns a _thunk_, we immediately call it passing it a function that you can use to trigger an update in the state tree.
+A getter is an action that retrieves a property from the state tree or the result of a computation.
 
 ```jsx
 app({
-  // ...
   actions: {
-    defer(state, actions, data) {
-      return update => {
-        // ...
-        update(newData)
-      }
+    isAdult({ userId }) {
+      return () => state.users[userId].age >= state.adultAge
     }
   }
 })
 ```
-
-The return value of the action is whatever the _thunk_ returns. Using this mechanism you can modify the default behavior of actions, e.g., to create getters, scoped mixins, etc.
 
 ## Namespaces
 
@@ -106,7 +120,6 @@ We iterate over your action keys, allowing for namespaced actions. Namespaces he
 
 ```jsx
 app({
-  // ...
   actions: {
     Game: gameActions,
     Score: scoreActions,

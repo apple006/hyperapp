@@ -12,8 +12,10 @@ Let's begin with the simplest of all programs. Paste the following code in a new
 const { h, app } = hyperapp
 
 app({
-  state: "Hello.",
-  view: state => h("h1", {}, state)
+  state: {
+    message: "Hello."
+  },
+  view: state => h("h1", {}, state.message)
 })
 
 </script>
@@ -25,19 +27,21 @@ You should see that "Hello." is displayed on the page.
 The state describes the application's data.
 
 ```js
-state: "Hello."
+state: {
+  message: "Hello."
+}
 ```
 
 The view describes the application's user interface.
 
 ```js
-state => h("h1", {}, state)
+state => h("h1", {}, state.message)
 ```
 
 You can write a view using [JSX] or [Hyperx] and compile it in a [build pipeline](#build-pipeline).
 
 ```jsx
-state => <h1>{state}</h1>
+state => <h1>{state.message}</h1>
 ```
 
 The [app](/docs/api.md#app) function wraps up everything and renders the view on the DOM.
@@ -46,7 +50,7 @@ And... we're done.
 
 ---
 
-We've only scratched the surface of what you can do and what's available in HyperApp. To learn more, check out the [Tutorials](/docs/tutorials.md) or read the [Implementation Notes](/docs/implementation-nodes.md) to peek under the hood.
+But we've only scratched the surface of what you can do with HyperApp. To learn more, check out the [Tutorials](/docs/tutorials.md) or read the [Implementation Notes](/docs/implementation-nodes.md) to peek under the hood.
 
 ## Installation
 
@@ -92,7 +96,7 @@ Vanilla out:
 h("main", { id: "app" }, "Hello.")
 ```
 
-A build pipeline lets you easily install and update third-party libraries, compile modern JavaScript for older browser and bundle your application into small modules to optimize load time.
+A build pipeline lets you install and update third-party libraries easily, compile modern JavaScript for older browser and bundle your application into small modules to optimize load time.
 
 See [JSX] or [Hyperx] for setup instructions.
 

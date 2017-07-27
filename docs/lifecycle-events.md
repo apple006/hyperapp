@@ -34,7 +34,7 @@ if (element.parentNode) {
 
 This example shows how to create a [component](/docs/components.md) and wrap a subset of the [CodeMirror](https://codemirror.net) editor.
 
-[Try it online](https://hyperapp-code-mirror.glitch.me)
+[Try it Online](https://hyperapp-code-mirror.glitch.me)
 
 ```jsx
 const node = document.createElement("div")

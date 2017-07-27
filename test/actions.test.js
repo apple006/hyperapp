@@ -1,12 +1,14 @@
 import { h, app } from "../src"
 
-window.requestAnimationFrame = f => f()
+const mockDelay = () => new Promise(resolve => setTimeout(resolve, 50))
 
-beforeEach(() => (document.body.innerHTML = ""))
+window.requestAnimationFrame = setTimeout
 
-const delay = () => new Promise(resolve => setTimeout(() => resolve(), 50))
+beforeEach(() => {
+  document.body.innerHTML = ""
+})
 
-test("namespaced/nested actions", () => {
+test("namespacing", done => {
   app({
     view: state => "",
     actions: {
@@ -14,6 +16,7 @@ test("namespaced/nested actions", () => {
         bar: {
           baz(state, actions, data) {
             expect(data).toBe("foo.bar.baz")
+            done()
           }
         }
       }
@@ -26,56 +29,80 @@ test("namespaced/nested actions", () => {
   })
 })
 
-test("update the state sync", () => {
+test("sync updates", done => {
   app({
-    view: state => h("div", {}, state),
-    state: 1,
+    view: state => h("div", {}, state.value),
+    state: {
+      value: 1
+    },
     actions: {
-      up: state => state + 1
+      up(state) {
+        return {
+          value: state.value + 1
+        }
+      }
     },
     events: {
       load(state, actions) {
         actions.up()
+      },
+      patch() {
         expect(document.body.innerHTML).toBe(`<div>2</div>`)
+        //
+        // actions.up() was a sync update, but rendering is async.
+        //
+        done()
       }
     }
   })
 })
 
-test("update the state async", done => {
+test("async updates", done => {
   app({
-    view: state => h("div", null, state),
-    state: 2,
+    view: state => h("div", {}, state.value),
+    state: {
+      value: 2
+    },
     actions: {
-      up: (state, actions, data) => state + data,
-      upAsync: (state, actions, data) => {
-        delay().then(() => {
-          actions.up(data)
-          expect(document.body.innerHTML).toBe(`<div>3</div>`)
-          done()
+      up(state, actions, byNumber) {
+        return {
+          value: state.value + byNumber
+        }
+      },
+      upAsync(state, actions, byNumber) {
+        mockDelay().then(() => {
+          actions.up(byNumber)
         })
       }
     },
     events: {
       load(state, actions) {
         actions.upAsync(1)
+      },
+      patch(state) {
+        //
+        // Ignore the first patch after the initial render.
+        //
+        if (state.value > 2) {
+          expect(document.body.innerHTML).toBe(`<div>3</div>`)
+          done()
+        }
       }
     }
   })
 })
 
-test("update the state async using a thunk", done => {
+test("thunks", done => {
   app({
-    view: state => h("div", {}, state),
-    state: 3,
+    view: state => h("div", {}, state.value),
+    state: {
+      value: 3
+    },
     actions: {
       upAsync(state, actions, data) {
         return update => {
-          delay().then(() => {
-            update(state + data)
-
-            expect(document.body.innerHTML).toBe(`<div>4</div>`)
-            done()
+          mockDelay().then(() => {
+            update({ value: state.value + data })
           })
         }
       }
@@ -83,37 +110,44 @@ test("update the state async using a thunk", done => {
     events: {
       load(state, actions) {
         actions.upAsync(1)
+      },
+      patch(state) {
+        if (state.value > 3) {
+          expect(document.body.innerHTML).toBe(`<div>4</div>`)
+          done()
+        }
       }
     }
   })
 })
 
-test("update the state async using a thunkified promise", done => {
-  function mockUpdate(cb) {
-    return data => {
-      cb(data)
-
-      expect(document.body.innerHTML).toBe(`<div>6</div>`)
-      done()
-    }
-  }
-
+test("thunks + promises", done => {
   app({
-    state: 5,
-    view: state => h("div", {}, state),
+    view: state => h("div", {}, state.value),
+    state: {
+      value: 4
+    },
     actions: {
       upAsync(state, actions, data) {
-        return delay().then(() => state + data)
+        return mockDelay().then(() => ({
+          value: state.value + data
+        }))
       }
     },
     events: {
       load(state, actions) {
         actions.upAsync(1)
       },
-      resolve(state, actions, data) {
-        return data && typeof data.then === "function"
-          ? update => data.then(mockUpdate(update))
-          : data
+      resolve(state, actions, result) {
+        return result && typeof result.then === "function"
+          ? update => result.then(update)
+          : result
+      },
+      patch(state) {
+        if (state.value > 4) {
+          expect(document.body.innerHTML).toBe(`<div>5</div>`)
+          done()
+        }
       }
     }
   })

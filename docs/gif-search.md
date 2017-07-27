@@ -2,7 +2,7 @@
 
 In this example we'll use the [Giphy API](https://api.giphy.com/) to create a GIF search and learn how to update the state asynchronously.
 
-[Try it online](https://codepen.io/hyperapp/pen/ZeByKv?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/ZeByKv?editors=0010)
 
 ```jsx
 app({

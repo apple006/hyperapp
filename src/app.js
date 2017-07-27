@@ -1,13 +1,13 @@
 export function app(props) {
-  var state = {}
+  var state
   var actions = {}
   var events = {}
   var mixins = []
   var view = props.view
-  var root = props.root || document.body
   var node
-  var element
-  var locked = false
+  var root = props.root
+  var host = (root && root.parentNode) || document.body
+  var lock = false
 
   for (var i = -1; i < mixins.length; i++) {
     props = mixins[i] ? mixins[i](emit) : props
@@ -17,15 +17,14 @@ export function app(props) {
     })
 
     iterate(actions, props.actions)
+
     mixins = mixins.concat(props.mixins || [])
-    state = merge(state, props.state || state)
+    state = merge(state, props.state)
   }
 
-  schedule(
-    (node = hydrate((element = root.querySelector("[data-ssr]")), [].map))
-  )
+  schedule((node = emit("load", root)))
 
-  return emit("load")
+  return emit
 
   function update(withState) {
     if (withState) {
@@ -34,31 +33,22 @@ export function app(props) {
   }
 
   function schedule() {
-    if (!locked) {
-      requestAnimationFrame(render, (locked = !locked))
+    if (view && !lock) {
+      requestAnimationFrame(render, (lock = !lock))
     }
   }
 
-  function hydrate(element, map) {
-    return element
-      ? {
-          tag: element.tagName,
-          data: {},
-          children: map.call(element.childNodes, function(element) {
-            hydrate(element, map)
-          })
-        }
-      : element
-  }
-
   function render() {
-    element = patch(
-      root,
-      element,
-      node,
-      (node = emit("render", view)(state, actions))
+    emit(
+      "patch",
+      (root = patch(
+        host,
+        root,
+        node,
+        (node = emit("render", view)(state, actions))
+      )),
+      (lock = !lock)
     )
-    locked = !locked
   }
 
   function iterate(namespace, children, lastName) {
@@ -69,12 +59,10 @@ export function app(props) {
       if (typeof action === "function") {
         namespace[key] = function(data) {
           emit("action", { name: name, data: data })
-          var result = emit("resolve", action(state, actions, data))
-          return typeof result === "function" ? result(update) : update(result)
 
-          // return result && result.then && result.then(update)
-          //   ? result
-          //   : typeof result === "function" ? result(update) : update(result)
+          var result = emit("resolve", action(state, actions, data))
+
+          return typeof result === "function" ? result(update) : update(result)
         }
       } else {
         iterate(namespace[key] || (namespace[key] = {}), action, name)
@@ -82,19 +70,27 @@ export function app(props) {
     })
   }
 
-  function emit(event, withData) {
-    return (events[event] || []).map(function(cb) {
-      withData = cb(state, actions, withData)
-    }), withData
+  function emit(name, data) {
+    return (events[name] || []).map(function(cb) {
+      var result = cb(state, actions, data)
+      if (result != null) {
+        data = result
+      }
+    }), data
   }
 
-  function merge(from, to) {
-    for (var i in from) {
-      if (!(i in to)) {
-        to[i] = from[i]
-      }
+  function merge(a, b) {
+    var obj = {}
+
+    for (var i in a) {
+      obj[i] = a[i]
     }
-    return to
+
+    for (var i in b) {
+      obj[i] = b[i]
+    }
+
+    return obj
   }
 
   function getKey(node) {
@@ -258,11 +254,7 @@ export function app(props) {
           removeElement(element, reusableChild[0], reusableNode.data)
         }
       }
-    } else if (
-      (lastElement = element) != null &&
-      node !== oldNode &&
-      node !== element.nodeValue
-    ) {
+    } else if ((lastElement = element) != null && node !== element.nodeValue) {
       parent.replaceChild((element = createElement(node, isSVG)), lastElement)
     }
 

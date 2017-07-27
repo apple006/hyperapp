@@ -1,8 +1,7 @@
 # Documentation
 
-We assume you have some knowledge of HTML and JavaScript. If you are completely new to frontend development, you may prefer to come back after learning the basics. Previous experience with other frameworks is a plus, but not required.
-
 - [Index](/docs/index.md)
+- [Contribution Guidelines](/docs/CONTRIBUTING.md)
 - [Getting Started](/docs/getting-started.md)
   - [Installation](/docs/getting-started.md#installation)
   - [Usage](/docs/getting-started.md#usage)

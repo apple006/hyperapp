@@ -2,7 +2,7 @@
 
 Use events to get notified when your app is initialized, an action is called, before a [view](/docs/view.md) is rendered, etc.
 
-[Try it online](https://codepen.io/hyperapp/pen/Bpyraw?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/Bpyraw?editors=0010)
 
 ```jsx
 app({
@@ -38,15 +38,30 @@ The beforeAction event fires before an action is called. This event can be usefu
 
 The resolve event fires after an action returns, allowing you to intercept its return value. Use this event to customize what types an action is allowed to return or modify the default state update mechanism.
 
-For example to allow actions to return an [Observable](https://github.com/tc39/proposal-observable).
+To allow actions to return an [Observable](https://github.com/tc39/proposal-observable).
 
 ```jsx
 app({
   //...
   events: {
-    resolve(state, actions, { result }) {
-      if (data != null && typeof data.subscribe == "function") {
+    resolve(state, actions, result) {
+      if (result && typeof result.subscribe == "function") {
         return update => result.subscribe({ next: update })
+      }
+    }
+  }
+})
+```
+
+To allow actions return a [Promise](https://github.com/tc39/proposal-observable).
+
+```jsx
+app({
+  //...
+  events: {
+    resolve(state, actions, result) {
+      if (result && typeof result.then === "function") {
+        return result.then(update) && result
       }
     }
   }

@@ -40,8 +40,10 @@ const hyperx = require("hyperx")
 const html = hyperx(h)
 
 app({
-  state: "Hi.",
-  view: state => html`<h1>${state}</h1>`
+  state: {
+    message: "Hi."
+  },
+  view: state => html`<h1>${state.message}</h1>`
 })
 ```
 

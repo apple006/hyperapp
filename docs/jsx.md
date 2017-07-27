@@ -36,8 +36,10 @@ And an `index.js` file:
 import { h, app } from "hyperapp"
 
 app({
-  state: "Hi.",
-  view: state => <h1>{state}</h1>
+  state: {
+    message: "Hi."
+  },
+  view: state => <h1>{state.message}</h1>
 })
 ```
 

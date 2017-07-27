@@ -2,7 +2,7 @@
 
 In this example and learn how to use the [events](/docs/events.md) property to register global events.
 
-[Try it online](https://codepen.io/hyperapp/pen/evOZLv?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/evOZLv?editors=0010)
 
 ```jsx
 const pad = n => (n < 10 ? "0" + n : n)

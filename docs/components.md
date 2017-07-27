@@ -2,7 +2,7 @@
 
 A [component](/docs/api.md#component) is a function that returns a custom [virtual node](/docs/virtual-nodes.md). Components are reusable blocks of code that encapsulate markup, styles and behaviours that belong together.
 
-[Try it online](https://codepen.io/hyperapp/pen/WRWbKw?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/WRWbKw?editors=0010)
 
 ```js
 const Title = ({ url, value }/*, children*/) =>

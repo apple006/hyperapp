@@ -2,7 +2,7 @@
 
 In this example we'll learn how to use [actions](/docs/actions.md) to update the state of your application.
 
-[Try it online](https://codepen.io/hyperapp/pen/zNxZLP?editors=0010)
+[Try it Online](https://codepen.io/hyperapp/pen/zNxZLP?editors=0010)
 
 ```jsx
 app({
